@@ -241,7 +241,11 @@ jobs:
           sed -i "s/^PKG_VERSION?=.*/PKG_VERSION?=${{ needs.prepare.outputs.luci_version }}/" \
             feeds/omnihive/luci-app-omnihive/Makefile
 
-          for pkg in luci-app-omnihive omnihive-core; do
+          pkgs="luci-app-omnihive"
+          # only build the core package when at least one arch binary was staged
+          [ -n "${AVAILABLE_ARCHS:-}" ] && pkgs="$pkgs omnihive-core"
+
+          for pkg in $pkgs; do
             make "package/feeds/omnihive/${pkg}/clean" || true
             if ! make "package/feeds/omnihive/${pkg}/compile" -j"$(nproc)"; then
               make "package/feeds/omnihive/${pkg}/compile" -j1 V=s

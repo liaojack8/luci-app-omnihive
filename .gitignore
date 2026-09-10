@@ -3,6 +3,7 @@ docs/
 .mignore
 .catpaw/
 PLAN.md
+.DS_Store
 
 # 本地打包产物（scripts/build-ipk.sh / make ipk）
 /bin/
