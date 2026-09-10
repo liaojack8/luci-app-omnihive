@@ -132,15 +132,29 @@ tar_reset() {  # $1=outfile  rest=paths (relative to -C dir)
 ( cd "$CTRL" && tar_reset "$WORK/control.tar.gz" ./control ./postinst )
 ( cd "$DATA" && tar_reset "$WORK/data.tar.gz" ./ )
 
+# Write a GNU-format `ar` archive by hand. macOS /usr/bin/ar emits BSD-style
+# member headers that opkg rejects ("Malformed package file"); GNU ar uses a
+# trailing '/' as the name terminator, which opkg's parser requires.
+ar_add() {  # $1=archive  $2=member name  $3=source file
+	local ar="$1" name="$2" src="$3" size
+	size=$(wc -c < "$src" | tr -d ' ')
+	printf '%-16s%-12u%-6u%-6u%-8s%-10u\140\n' "${name}/" 0 0 0 100644 "$size" >> "$ar"
+	cat "$src" >> "$ar"
+	[ $((size % 2)) -eq 0 ] || printf '\n' >> "$ar"
+}
+
 rm -f "$IPK"
-( cd "$WORK" && ar qc "$IPK" debian-binary control.tar.gz data.tar.gz )
+printf '!<arch>\n' > "$IPK"
+ar_add "$IPK" debian-binary  "$WORK/debian-binary"
+ar_add "$IPK" control.tar.gz "$WORK/control.tar.gz"
+ar_add "$IPK" data.tar.gz    "$WORK/data.tar.gz"
 
 # --- report -----------------------------------------------------------
 if command -v sha256sum >/dev/null 2>&1; then SUM=$(sha256sum "$IPK"); else SUM=$(shasum -a 256 "$IPK"); fi
 echo "built:  $IPK"
 echo "size:   $(wc -c < "$IPK" | tr -d ' ') bytes"
 echo "sha256: ${SUM%% *}"
-echo "ar:     $(ar t "$IPK" | tr '\n' ' ')"
+echo "ar:     $(ar t "$IPK" 2>/dev/null | tr '\n' ' ')"
 echo
 echo "install on router:"
 echo "  scp '$IPK' root@ROUTER:/tmp/"
