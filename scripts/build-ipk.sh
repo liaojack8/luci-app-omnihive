@@ -80,6 +80,10 @@ find "$DATA" -type f -exec chmod 0644 {} +
 [ -d "$DATA/etc/uci-defaults" ]           && find "$DATA/etc/uci-defaults" -type f -exec chmod 0755 {} +
 [ -d "$DATA/usr/share/omnihive" ]         && find "$DATA/usr/share/omnihive" -name '*.sh' -exec chmod 0755 {} +
 
+# drop macOS xattrs (com.apple.provenance etc.) so they can't leak into the
+# tar as pax extended headers, which opkg's tar reader rejects as malformed
+command -v xattr >/dev/null 2>&1 && xattr -rc "$DATA" 2>/dev/null || true
+
 INSTALLED_SIZE="$(find "$DATA" -type f -exec cat {} + | wc -c | tr -d ' ')"
 
 # --- control --------------------------------------------------------------
@@ -123,9 +127,13 @@ printf '2.0\n' > "$WORK/debian-binary"
 tar_reset() {  # $1=outfile  rest=paths (relative to -C dir)
 	local out="$1"; shift
 	if tar --version 2>/dev/null | grep -q 'GNU tar'; then
-		tar --numeric-owner --owner=0 --group=0 -czf "$out" "$@"
+		tar --format=ustar --numeric-owner --owner=0 --group=0 -czf "$out" "$@"
 	else
-		tar --numeric-owner --uid 0 --gid 0 --uname '' --gname '' -czf "$out" "$@"
+		# macOS/libarchive tar: force plain ustar (no pax), and keep out
+		# xattrs / com.apple.provenance / AppleDouble / fflags. opkg's tar
+		# extractor errors on pax extended headers -> "Malformed package file".
+		COPYFILE_DISABLE=1 tar --format ustar --no-xattrs --no-mac-metadata --no-fflags \
+			--numeric-owner --uid 0 --gid 0 --uname '' --gname '' -czf "$out" "$@"
 	fi
 }
 
