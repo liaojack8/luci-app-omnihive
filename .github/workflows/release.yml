@@ -3,8 +3,8 @@ name: Release Packages
 on:
   workflow_dispatch:
     inputs:
-      vohive_version:
-        description: 'VoHive core version (empty = use latest from repos)'
+      omnihive_version:
+        description: 'OmniHive core version (empty = use latest from repos)'
         required: false
         default: ''
   push:
@@ -13,7 +13,7 @@ on:
 
 env:
   TZ: Asia/Shanghai
-  VOHIVE_VERSION: ${{ github.event.inputs.vohive_version || '' }}
+  OMNIHIVE_VERSION: ${{ github.event.inputs.omnihive_version || '' }}
 
 jobs:
   prepare:
@@ -44,7 +44,7 @@ jobs:
           previous_tag="$(git tag --sort=-v:refname --merged HEAD | grep -v "^${tag_name}$" | head -n 1 || true)"
 
           {
-            echo "## VoHive LuCI ${luci_version}"
+            echo "## OmniHive LuCI ${luci_version}"
             echo
             echo "### Changelog"
             echo
@@ -76,7 +76,7 @@ jobs:
           changelog=$(grep '^-' release-notes.md | head -10)
           tag="${{ steps.release_meta.outputs.tag_name }}"
           {
-            printf '🔨 luci-app-vohive %s build triggered\n\nChangelog:\n' "$tag"
+            printf '🔨 luci-app-omnihive %s build triggered\n\nChangelog:\n' "$tag"
             printf '%s\n' "$changelog"
             printf '\n⏳ Building...'
           } > tg-msg.txt
@@ -119,12 +119,12 @@ jobs:
             echo "${key,,}=${value}" >> "$GITHUB_OUTPUT"
           done < "source/.github/workflows/${{ matrix.id }}.env"
 
-      - name: Prepare VoHive core files
+      - name: Prepare OmniHive core files
         env:
           GH_TOKEN: ${{ secrets.GH_PAT || github.token }}
         run: |
           set -eu
-          mkdir -p source/vohive-core/files
+          mkdir -p source/omnihive-core/files
           available=""
 
           # Helper: download core binary from a GitHub release repo
@@ -140,31 +140,31 @@ jobs:
             [ -n "$actual_tag" ] || return 1
             if gh release download "$actual_tag" \
                 --repo "$repo" \
-                --pattern "vohive_*_linux_${arch}" \
+                --pattern "omnihive_*_linux_${arch}" \
                 --dir "$tmpdir" 2>/dev/null; then
-              fetched="$(ls -1 "$tmpdir"/vohive_*_linux_${arch} 2>/dev/null | head -n1 || true)"
+              fetched="$(ls -1 "$tmpdir"/omnihive_*_linux_${arch} 2>/dev/null | head -n1 || true)"
             fi
             [ -n "$fetched" ] && [ -s "$fetched" ]
           }
 
           for arch in arm64 amd64 armv7; do
-            out="source/vohive-core/files/vohive-${arch}"
+            out="source/omnihive-core/files/omnihive-${arch}"
             tmpdir="$(mktemp -d)"
             real_version=""
             fetched=""
 
             # 1) Release repo: voorz/vohive-release
-            if fetch_from_repo "voorz/vohive-release" "${VOHIVE_VERSION:-latest}" "$arch" "$tmpdir"; then
+            if fetch_from_repo "voorz/vohive-release" "${OMNIHIVE_VERSION:-latest}" "$arch" "$tmpdir"; then
               mv -f "$fetched" "$out"
-              real_version="$(basename "$fetched" | sed -E 's/^vohive_(v?[0-9][0-9.]*[0-9])(-[0-9]+-g[0-9a-f]+)?_linux_.*/\1/')"
-              echo "::notice::${arch}: fetched $(basename "$fetched") from vohive-release (version ${real_version})."
+              real_version="$(basename "$fetched" | sed -E 's/^omnihive_(v?[0-9][0-9.]*[0-9])(-[0-9]+-g[0-9a-f]+)?_linux_.*/\1/')"
+              echo "::notice::${arch}: fetched $(basename "$fetched") from omnihive-release (version ${real_version})."
             else
               rm -rf "$tmpdir"
               # 2) Fall back to preset dir (files/), pick the latest version
-              preset="$(ls -1 source/vohive-core/files/vohive_v*_linux_${arch} 2>/dev/null | sort -Vr | head -n1 || true)"
+              preset="$(ls -1 source/omnihive-core/files/omnihive_v*_linux_${arch} 2>/dev/null | sort -Vr | head -n1 || true)"
               if [ -n "$preset" ] && [ -s "$preset" ]; then
                 cp -f "$preset" "$out"
-                real_version="$(basename "$preset" | sed -E 's/^vohive_(v?[0-9][0-9.]*[0-9])(-[0-9]+-g[0-9a-f]+)?_linux_.*/\1/')"
+                real_version="$(basename "$preset" | sed -E 's/^omnihive_(v?[0-9][0-9.]*[0-9])(-[0-9]+-g[0-9a-f]+)?_linux_.*/\1/')"
                 echo "::warning::${arch}: release download failed, using preset ${preset##*/} (version ${real_version})."
               else
                 # 3) Neither available, skip this arch
@@ -175,17 +175,17 @@ jobs:
             fi
             rm -rf "$tmpdir"
             chmod 0755 "$out"
-            echo "$real_version" > "source/vohive-core/files/.version-${arch}"
-            echo "${arch}=${real_version}" >> "source/vohive-core/files/.available"
+            echo "$real_version" > "source/omnihive-core/files/.version-${arch}"
+            echo "${arch}=${real_version}" >> "source/omnihive-core/files/.available"
             file "$out"
             available="${available} ${arch}"
           done
           echo "AVAILABLE_ARCHS=${available# }" >> "$GITHUB_ENV"
-          # Override VOHIVE_VERSION with the actual produced core version (so package filename matches the real binary)
-          real_core_version="$(cut -d= -f2 source/vohive-core/files/.available 2>/dev/null | sort -Vr | head -n1 || true)"
+          # Override OMNIHIVE_VERSION with the actual produced core version (so package filename matches the real binary)
+          real_core_version="$(cut -d= -f2 source/omnihive-core/files/.available 2>/dev/null | sort -Vr | head -n1 || true)"
           if [ -n "$real_core_version" ]; then
-            echo "VOHIVE_VERSION=$real_core_version" >> "$GITHUB_ENV"
-            echo "Overrode VOHIVE_VERSION to $real_core_version (from .available)"
+            echo "OMNIHIVE_VERSION=$real_core_version" >> "$GITHUB_ENV"
+            echo "Overrode OMNIHIVE_VERSION to $real_core_version (from .available)"
           fi
           echo "Available archs:${available}"
 
@@ -209,22 +209,22 @@ jobs:
           src-git packages https://github.com/openwrt/packages.git;${FEED_BRANCH}
           src-git luci https://github.com/openwrt/luci.git;${FEED_BRANCH}
           src-git routing https://git.openwrt.org/feed/routing.git;${FEED_BRANCH}
-          src-link vohive $(pwd)/../source
+          src-link omnihive $(pwd)/../source
           EOF
           ./scripts/feeds update -a
           ./scripts/feeds install -a
-          ./scripts/feeds install -a -p vohive
+          ./scripts/feeds install -a -p omnihive
 
           cat <<'EOF' > .config
           CONFIG_ALL_NONSHARED=n
           CONFIG_ALL_KMODS=n
           CONFIG_ALL=n
           CONFIG_AUTOREMOVE=n
-          CONFIG_PACKAGE_luci-app-vohive=m
+          CONFIG_PACKAGE_luci-app-omnihive=m
           EOF
           for arch in arm64 amd64 armv7; do
             case " ${AVAILABLE_ARCHS} " in
-              *" ${arch} "*) echo "CONFIG_PACKAGE_vohive-core-${arch}=m" >> .config ;;
+              *" ${arch} "*) echo "CONFIG_PACKAGE_omnihive-core-${arch}=m" >> .config ;;
             esac
           done
           make defconfig
@@ -234,21 +234,21 @@ jobs:
         run: |
           set -eu
           cd sdk
-          ./scripts/feeds update vohive
-          ./scripts/feeds install -a -p vohive
+          ./scripts/feeds update omnihive
+          ./scripts/feeds install -a -p omnihive
 
           # Replace PKG_VERSION in Makefile with the current tag version
           sed -i "s/^PKG_VERSION?=.*/PKG_VERSION?=${{ needs.prepare.outputs.luci_version }}/" \
-            feeds/vohive/luci-app-vohive/Makefile
+            feeds/omnihive/luci-app-omnihive/Makefile
 
-          for pkg in luci-app-vohive vohive-core; do
-            make "package/feeds/vohive/${pkg}/clean" || true
-            if ! make "package/feeds/vohive/${pkg}/compile" -j"$(nproc)"; then
-              make "package/feeds/vohive/${pkg}/compile" -j1 V=s
+          for pkg in luci-app-omnihive omnihive-core; do
+            make "package/feeds/omnihive/${pkg}/clean" || true
+            if ! make "package/feeds/omnihive/${pkg}/compile" -j"$(nproc)"; then
+              make "package/feeds/omnihive/${pkg}/compile" -j1 V=s
             fi
           done
 
-          package_dir="$(pwd)/bin/packages/${SDK_ARCH}/vohive"
+          package_dir="$(pwd)/bin/packages/${SDK_ARCH}/omnihive"
           dist_dir="$(pwd)/../dist/${{ matrix.id }}"
           mkdir -p "$dist_dir"
 
@@ -262,12 +262,12 @@ jobs:
           cp "$package_dir"/*.${PACKAGE_EXT} "$dist_dir"/
           cp "$package_dir"/Packages* "$dist_dir"/ 2>/dev/null || true
           cp "$package_dir"/APKINDEX* "$dist_dir"/ 2>/dev/null || true
-          cp "../source/vohive-core/files/.available" "$dist_dir/.available" 2>/dev/null || true
+          cp "../source/omnihive-core/files/.available" "$dist_dir/.available" 2>/dev/null || true
 
           {
             echo "Tag: ${{ needs.prepare.outputs.tag_name }}"
             echo "LuCI version: ${{ needs.prepare.outputs.luci_version }}"
-            echo "VoHive core: ${VOHIVE_VERSION}"
+            echo "OmniHive core: ${OMNIHIVE_VERSION}"
             echo "Build: ${{ matrix.label }}"
             echo "Build ID: ${{ matrix.id }}"
             echo "SDK: ${SDK_NAME}"
@@ -278,7 +278,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: vohive-${{ matrix.id }}
+          name: omnihive-${{ matrix.id }}
           path: dist/${{ matrix.id }}
           retention-days: 7
           include-hidden-files: true
@@ -298,7 +298,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
-          pattern: vohive-*
+          pattern: omnihive-*
           merge-multiple: false
 
       - name: Download release notes
@@ -333,7 +333,7 @@ jobs:
             echo
             echo "| Package | Description |"
             echo "|---------|-------------|"
-            echo "| \`luci-app-vohive_*.ipk/apk\` | LuCI management page (required), without VoHive core binary |"
+            echo "| \`luci-app-omnihive_*.ipk/apk\` | LuCI management page (required), without OmniHive core binary |"
             if [ -n "$available_file" ] && [ -f "$available_file" ]; then
               declare -A arch_ver
               while IFS='=' read -r a v; do
@@ -346,7 +346,7 @@ jobs:
                     amd64) desc="for x86_64 devices" ;;
                     armv7) desc="for armv7l routers" ;;
                   esac
-                  echo "| \`vohive-core-${a}_*.ipk/apk\` | VoHive core ${arch_ver[$a]}, ${desc} |"
+                  echo "| \`omnihive-core-${a}_*.ipk/apk\` | OmniHive core ${arch_ver[$a]}, ${desc} |"
                 fi
               done
             fi
@@ -360,7 +360,7 @@ jobs:
             echo "2. **Check OpenWrt version**:"
             echo "   - OpenWrt / Kwrt **24.x** → download **.ipk**"
             echo "   - OpenWrt / Kwrt **25.x** → download **.apk**"
-            echo "3. **Install order**: install \`luci-app-vohive\` first, then the matching \`vohive-core-*\`"
+            echo "3. **Install order**: install \`luci-app-omnihive\` first, then the matching \`omnihive-core-*\`"
             echo "   (or install the core online from the LuCI 'Core management' page)"
             echo
             if [ -n "${{ needs.prepare.outputs.previous_tag }}" ]; then
@@ -399,12 +399,12 @@ jobs:
           run_id="$RUN_ID"
           if [ "$BUILD_RESULT" = "success" ]; then
             {
-              printf '✅ luci-app-vohive %s build succeeded\n\n📦 Releases:\n' "$tag"
+              printf '✅ luci-app-omnihive %s build succeeded\n\n📦 Releases:\n' "$tag"
               printf 'https://github.com/%s/releases/tag/%s' "$repo" "$tag"
             } > tg-msg.txt
           else
             {
-              printf '❌ luci-app-vohive %s build failed (%s)\n\n🔍 Details:\n' "$tag" "$BUILD_RESULT"
+              printf '❌ luci-app-omnihive %s build failed (%s)\n\n🔍 Details:\n' "$tag" "$BUILD_RESULT"
               printf 'https://github.com/%s/actions/runs/%s' "$repo" "$run_id"
             } > tg-msg.txt
           fi

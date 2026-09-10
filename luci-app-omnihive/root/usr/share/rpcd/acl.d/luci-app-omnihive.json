@@ -1,0 +1,36 @@
+{
+	"luci-app-omnihive": {
+		"description": "Grant access to OmniHive LuCI app",
+		"read": {
+		"uci": [ "omnihive", "network", "firewall" ],
+		"file": {
+			"/usr/share/omnihive/status.sh": [ "exec" ],
+			"/usr/share/omnihive/logs.sh": [ "exec" ],
+			"/usr/share/omnihive/releases.sh": [ "exec" ],
+			"/usr/share/omnihive/plugin_status.sh": [ "exec" ],
+			"/usr/share/omnihive/device_probe.sh": [ "exec" ],
+			"/usr/share/omnihive/task_status.sh": [ "exec" ],
+			"/usr/share/omnihive/usb_status.sh": [ "exec" ],
+			"/usr/share/omnihive/network_status.sh": [ "exec" ]
+		}
+		},
+		"write": {
+		"uci": [ "omnihive", "network", "firewall" ],
+		"file": {
+			"/usr/share/omnihive/apply_config.sh": [ "exec" ],
+			"/usr/share/omnihive/network_setup.sh": [ "exec" ],
+				"/usr/share/omnihive/install_core.sh": [ "exec" ],
+				"/usr/share/omnihive/service.sh": [ "exec" ],
+				"/usr/share/omnihive/clear_logs.sh": [ "exec" ],
+				"/usr/share/omnihive/update_plugin.sh": [ "exec" ],
+				"/usr/share/omnihive/device_tools.sh": [ "exec" ],
+				"/usr/share/omnihive/task_start.sh": [ "exec" ],
+				"/usr/share/omnihive/task_cancel.sh": [ "exec" ],
+				"/usr/share/omnihive/driver_bind.sh": [ "exec" ],
+				"/usr/share/omnihive/recover_qmi.sh": [ "exec" ],
+				"/tmp/omnihive/download/omnihive-core-upload": [ "write" ]
+			},
+			"cgi-io": [ "upload" ]
+		}
+	}
+}

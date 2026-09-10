@@ -1,0 +1,13 @@
+{
+	"admin/services/omnihive": {
+		"title": "OmniHive",
+		"order": 60,
+		"action": {
+			"type": "view",
+			"path": "omnihive/index"
+		},
+		"depends": {
+			"acl": [ "luci-app-omnihive" ]
+		}
+	}
+}

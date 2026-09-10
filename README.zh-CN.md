@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="static/vohive-wrt.png" alt="VoHive × OpenWrt — Vohive Dashboard for Luci-App" width="100%" />
+  <img src="static/omnihive-wrt.png" alt="OmniHive × OpenWrt — Omnihive Dashboard for Luci-App" width="100%" />
 </p>
 
-<h1 align="center">luci-app-vohive</h1>
+<h1 align="center">luci-app-omnihive</h1>
 
 <p align="center">
-  <strong>VoHive 的 OpenWrt / ImmortalWrt LuCI 管理插件</strong><br />
+  <strong>OmniHive 的 OpenWrt / ImmortalWrt LuCI 管理插件</strong><br />
   在路由器 Web 界面中完成核心安装、服务控制、配置管理与 USB 驱动运维
 </p>
 
@@ -30,13 +30,13 @@
 
 ## 简介
 
-`luci-app-vohive` 为 [VoHive](https://github.com/voorz/vohive-next) 提供官方风格的路由器侧管理界面，安装后出现在：
+`luci-app-omnihive` 为 [OmniHive](https://github.com/voorz/vohive-next) 提供官方风格的路由器侧管理界面，安装后出现在：
 
 ```text
-LuCI → 服务 → VoHive
+LuCI → 服务 → OmniHive
 ```
 
-插件本身**不内置** VoHive 二进制；可按需安装对应架构的 `vohive-core-*` 包，或在页面内从 GitHub Release 在线安装 / 更新 / 回滚核心。
+插件本身**不内置** OmniHive 二进制；可按需安装对应架构的 `omnihive-core-*` 包，或在页面内从 GitHub Release 在线安装 / 更新 / 回滚核心。
 
 默认核心 Release 仓库：
 
@@ -50,10 +50,10 @@ https://github.com/voorz/vohive-next
 
 | 模块 | 说明 |
 |------|------|
-| **核心管理** | 从 GitHub Release 列出版本，安装 / 更新 / 回滚 VoHive 核心 |
+| **核心管理** | 从 GitHub Release 列出版本，安装 / 更新 / 回滚 OmniHive 核心 |
 | **任务进度** | 下载与安装过程展示进度、已下载大小、总大小与速度 |
-| **服务控制** | 启动、停止、重启基于 procd 的 VoHive 服务 |
-| **配置管理** | 通过 UCI 编辑，并渲染为 `/etc/vohive/config/config.yaml` |
+| **服务控制** | 启动、停止、重启基于 procd 的 OmniHive 服务 |
+| **配置管理** | 通过 UCI 编辑，并渲染为 `/etc/omnihive/config/config.yaml` |
 | **状态与日志** | 核心版本、架构、服务状态、端口监听与近期日志 |
 | **插件自更新** | 支持 OpenWrt 24（`opkg` / `.ipk`）与 25（`apk` / `.apk`） |
 | **驱动管理** | USB 接口驱动绑定状态查看与手动管理，缓解 4G 模块被 `option` 占用等问题 |
@@ -77,9 +77,9 @@ uname -m
 
 | `uname -m` | 选择的 core 包 |
 |------------|----------------|
-| `aarch64` / `arm64` | `vohive-core-arm64` |
-| `x86_64` / `amd64` | `vohive-core-amd64` |
-| `armv7l` / `armv7` | `vohive-core-armv7` |
+| `aarch64` / `arm64` | `omnihive-core-arm64` |
+| `x86_64` / `amd64` | `omnihive-core-amd64` |
+| `armv7l` / `armv7` | `omnihive-core-armv7` |
 
 ### 2. 仅安装 LuCI 插件
 
@@ -88,26 +88,26 @@ uname -m
 **OpenWrt 24.x（opkg）**
 
 ```sh
-opkg install luci-app-vohive_<version>-r1_all.ipk
+opkg install luci-app-omnihive_<version>-r1_all.ipk
 ```
 
 **OpenWrt 25.x（apk）**
 
 ```sh
-apk add --allow-untrusted luci-app-vohive-<version>-r1*.apk
+apk add --allow-untrusted luci-app-omnihive-<version>-r1*.apk
 ```
 
-进入 **服务 → VoHive**，在页面中点击「安装 / 更新核心」即可拉取二进制。
+进入 **服务 → OmniHive**，在页面中点击「安装 / 更新核心」即可拉取二进制。
 
 ### 3. 插件 + 预置核心（可选）
 
 ```sh
 # 示例：24.x + arm64
-opkg install luci-app-vohive_<version>-r1_all.ipk vohive-core-arm64_1.6.1-r1_all.ipk
+opkg install luci-app-omnihive_<version>-r1_all.ipk omnihive-core-arm64_1.6.1-r1_all.ipk
 
 # 示例：24.x + amd64 / armv7
-opkg install luci-app-vohive_<version>-r1_all.ipk vohive-core-amd64_1.6.1-r1_all.ipk
-opkg install luci-app-vohive_<version>-r1_all.ipk vohive-core-armv7_1.6.1-r1_all.ipk
+opkg install luci-app-omnihive_<version>-r1_all.ipk omnihive-core-amd64_1.6.1-r1_all.ipk
+opkg install luci-app-omnihive_<version>-r1_all.ipk omnihive-core-armv7_1.6.1-r1_all.ipk
 ```
 
 > 安装后默认 **不启用** 服务（`enabled=0`）。在 LuCI 中配置账号端口等信息并启用后，再启动服务。
@@ -122,7 +122,7 @@ opkg install luci-app-vohive_<version>-r1_all.ipk vohive-core-armv7_1.6.1-r1_all
 
 ## 相关链接
 
-- [VoHive 核心项目](https://github.com/voorz/vohive-next)
+- [OmniHive 核心项目](https://github.com/voorz/vohive-next)
 - [本插件 Releases](https://github.com/voorz/luci-app-vohive/releases)
 - [OpenWrt 官方文档](https://openwrt.org/docs/start)
 - [LuCI 项目](https://github.com/openwrt/luci)
@@ -133,10 +133,10 @@ opkg install luci-app-vohive_<version>-r1_all.ipk vohive-core-armv7_1.6.1-r1_all
 
 本仓库 LuCI 插件源码以 **MIT** 许可发布（见包内 `PKG_LICENSE`）。
 
-VoHive **核心二进制**及其许可证以 [voorz/vohive-next](https://github.com/voorz/vohive-next) 为准；`vohive-core-*` 包仅用于分发预编译 core，不改变上游授权条款。
+OmniHive **核心二进制**及其许可证以 [voorz/vohive-next](https://github.com/voorz/vohive-next) 为准；`omnihive-core-*` 包仅用于分发预编译 core，不改变上游授权条款。
 
 ---
 
 <p align="center">
-  <sub>VoHive Dashboard for LuCI-App · Built for OpenWrt</sub>
+  <sub>OmniHive Dashboard for LuCI-App · Built for OpenWrt</sub>
 </p>

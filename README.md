@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="static/vohive-wrt.png" alt="VoHive × OpenWrt — Vohive Dashboard for Luci-App" width="100%" />
+  <img src="static/omnihive-wrt.png" alt="OmniHive × OpenWrt — Omnihive Dashboard for Luci-App" width="100%" />
 </p>
 
-<h1 align="center">luci-app-vohive</h1>
+<h1 align="center">luci-app-omnihive</h1>
 
 <p align="center">
-  <strong>OpenWrt / ImmortalWrt LuCI app for VoHive</strong><br />
+  <strong>OpenWrt / ImmortalWrt LuCI app for OmniHive</strong><br />
   Core install, service control, config management and USB driver ops from the router web UI
 </p>
 
@@ -36,13 +36,13 @@
 
 ## Overview
 
-`luci-app-vohive` ships the official-style router-side management UI for [VoHive](https://github.com/voorz/vohive-next). After install it shows up at:
+`luci-app-omnihive` ships the official-style router-side management UI for [OmniHive](https://github.com/voorz/vohive-next). After install it shows up at:
 
 ```text
-LuCI → Services → VoHive
+LuCI → Services → OmniHive
 ```
 
-The plugin itself does **not** bundle the VoHive binary; install the matching `vohive-core-*` package for your arch, or pull / update / roll back the core from the GitHub Release directly within the page.
+The plugin itself does **not** bundle the OmniHive binary; install the matching `omnihive-core-*` package for your arch, or pull / update / roll back the core from the GitHub Release directly within the page.
 
 Default core release repo:
 
@@ -56,10 +56,10 @@ https://github.com/voorz/vohive-next
 
 | Module                 | Description                                                                        |
 | ---------------------- | ---------------------------------------------------------------------------------- |
-| **Core management**    | List GitHub Release versions; install / update / roll back the VoHive core         |
+| **Core management**    | List GitHub Release versions; install / update / roll back the OmniHive core         |
 | **Task progress**      | Show download progress, downloaded / total size and speed                          |
-| **Service control**    | Start, stop, restart the procd-based VoHive service                                |
-| **Config management**  | Edit via UCI, rendered to `/etc/vohive/config/config.yaml`                         |
+| **Service control**    | Start, stop, restart the procd-based OmniHive service                                |
+| **Config management**  | Edit via UCI, rendered to `/etc/omnihive/config/config.yaml`                         |
 | **Status & logs**      | Core version, arch, service state, port listening and recent logs                  |
 | **Plugin self-update** | Supports OpenWrt 24 (`opkg` / `.ipk`) and 25 (`apk` / `.apk`)                      |
 | **Driver management**  | Inspect and manage USB driver bindings; mitigate 4G modules being held by `option` |
@@ -83,9 +83,9 @@ uname -m
 
 | `uname -m`          | Core package        |
 | ------------------- | ------------------- |
-| `aarch64` / `arm64` | `vohive-core-arm64` |
-| `x86_64` / `amd64`  | `vohive-core-amd64` |
-| `armv7l` / `armv7`  | `vohive-core-armv7` |
+| `aarch64` / `arm64` | `omnihive-core-arm64` |
+| `x86_64` / `amd64`  | `omnihive-core-amd64` |
+| `armv7l` / `armv7`  | `omnihive-core-armv7` |
 
 ### 2. Install the LuCI plugin only
 
@@ -94,26 +94,26 @@ Download the matching package from [Releases](https://github.com/voorz/luci-app-
 **OpenWrt 24.x (opkg)**
 
 ```sh
-opkg install luci-app-vohive_<version>-r1_all.ipk
+opkg install luci-app-omnihive_<version>-r1_all.ipk
 ```
 
 **OpenWrt 25.x (apk)**
 
 ```sh
-apk add --allow-untrusted luci-app-vohive-<version>-r1*.apk
+apk add --allow-untrusted luci-app-omnihive-<version>-r1*.apk
 ```
 
-Go to **Services → VoHive** and click "Install / Update core" to pull the binary.
+Go to **Services → OmniHive** and click "Install / Update core" to pull the binary.
 
 ### 3. Plugin + pre-bundled core (optional)
 
 ```sh
 # Example: 24.x + arm64
-opkg install luci-app-vohive_<version>-r1_all.ipk vohive-core-arm64_1.6.1-r1_all.ipk
+opkg install luci-app-omnihive_<version>-r1_all.ipk omnihive-core-arm64_1.6.1-r1_all.ipk
 
 # Example: 24.x + amd64 / armv7
-opkg install luci-app-vohive_<version>-r1_all.ipk vohive-core-amd64_1.6.1-r1_all.ipk
-opkg install luci-app-vohive_<version>-r1_all.ipk vohive-core-armv7_1.6.1-r1_all.ipk
+opkg install luci-app-omnihive_<version>-r1_all.ipk omnihive-core-amd64_1.6.1-r1_all.ipk
+opkg install luci-app-omnihive_<version>-r1_all.ipk omnihive-core-armv7_1.6.1-r1_all.ipk
 ```
 
 > The service is **disabled** by default after install (`enabled=0`). Configure your account / port in LuCI, enable it, then start the service.
@@ -128,7 +128,7 @@ Issues and Pull Requests are welcome. Please describe your environment (OpenWrt 
 
 ## Related Links
 
-- [VoHive core project](https://github.com/voorz/vohive-next)
+- [OmniHive core project](https://github.com/voorz/vohive-next)
 - [This plugin's Releases](https://github.com/voorz/luci-app-vohive/releases)
 - [OpenWrt docs](https://openwrt.org/docs/start)
 - [LuCI project](https://github.com/openwrt/luci)
@@ -139,10 +139,10 @@ Issues and Pull Requests are welcome. Please describe your environment (OpenWrt 
 
 The LuCI plugin source in this repo is released under **MIT** (see `PKG_LICENSE` inside the package).
 
-The VoHive **core binary** and its license follow [voorz/vohive-next](https://github.com/voorz/vohive-next); the `vohive-core-*` packages only distribute prebuilt core and do not alter upstream licensing.
+The OmniHive **core binary** and its license follow [voorz/vohive-next](https://github.com/voorz/vohive-next); the `omnihive-core-*` packages only distribute prebuilt core and do not alter upstream licensing.
 
 ---
 
 <p align="center">
-  <sub>VoHive Dashboard for LuCI-App · Built for OpenWrt</sub>
+  <sub>OmniHive Dashboard for LuCI-App · Built for OpenWrt</sub>
 </p>
