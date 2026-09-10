@@ -4,6 +4,10 @@ docs/
 .catpaw/
 PLAN.md
 
+# 本地打包产物（scripts/build-ipk.sh / make ipk）
+/bin/
+/dist/
+
 # CI 生成的核心二进制与元数据（无版本前缀），不提交
 # 预置的核心二进制文件名为 omnihive_v<version>_linux_<arch>，会被 git 跟踪
 omnihive-core/files/omnihive-*
